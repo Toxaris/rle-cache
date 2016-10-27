@@ -20,6 +20,6 @@ object Fetcher {
 class Fetcher extends Actor with ActorLogging {
   import Fetcher._
   def receive = {
-    case Fetcher.Fetch => log.info("fetch data from upstream")
+    case Fetch => log.info("fetch data from upstream")
   }
 }
