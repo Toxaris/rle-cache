@@ -14,6 +14,12 @@ object Config extends ConfigTree(ConfigFactory.load()) {
   object rlecache extends ConfigTree(getConfig("rle-cache")) {
     import config._
 
+    /** `rle-cache.interface` configuration of listening interface */
+    val interface = getString("interface")
+
+    /** `rle-cache.port` configuration of listening port */
+    val port = getInt("port")
+
     /** `upstream.*` configuration of the upstream endpoint */
     object upstream extends ConfigTree(getConfig("upstream")) {
       import config._
