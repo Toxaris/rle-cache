@@ -31,6 +31,11 @@ class Cacher extends Actor with ActorLogging {
       cache = seq
       log.info("Cached {} items.", seq.size)
     case Get(index) =>
-      sender ! cache.lift(index)
+      try {
+        sender() ! cache(index)
+      } catch {
+        case e: IndexOutOfBoundsException =>
+          sender() ! Status.Failure(e)
+      }
   }
 }

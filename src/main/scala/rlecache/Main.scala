@@ -6,6 +6,7 @@ package rlecache
 
 import akka.actor.ActorSystem
 import akka.event.Logging
+import akka.pattern.ask
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
@@ -13,6 +14,7 @@ import akka.stream.ActorMaterializer
 import scala.concurrent.duration._
 import scala.util.Success
 import scala.util.Failure
+import akka.util.Timeout
 
 /** Main entry point of the RLE cache service. */
 object Main extends App {
@@ -20,6 +22,7 @@ object Main extends App {
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
+  implicit val timeout: Timeout = 500.milliseconds
   val log = Logging(system, "rle-cache")
 
   // start actors
@@ -33,7 +36,14 @@ object Main extends App {
   val route =
       path(IntNumber) { index =>
         get {
-          complete(s"Item $index requested.")
+          onComplete((cacher ? Cacher.Get(index)).mapTo[String]) {
+            case Success(result) =>
+              complete(result)
+            case Failure(e: IndexOutOfBoundsException) =>
+              complete(StatusCodes.NotFound)
+            case Failure(e) =>
+              complete(StatusCodes.InternalServerError)
+          }
         }
       }
 
