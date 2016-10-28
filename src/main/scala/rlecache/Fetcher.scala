@@ -10,17 +10,18 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.client._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl._
+import akka.util.ByteString
 
 object Fetcher {
   /** Message to Fetcher: Fetch data from upstream now. */
   object Fetch
 
   /**	Return props for creating a Fetcher. */
-  def props: Props = Props[Fetcher]
+  def props(cacher: ActorRef): Props = Props(new Fetcher(cacher))
 }
 
 /** Actor that fetches data from upstream. */
-class Fetcher extends Actor with ActorLogging {
+class Fetcher(cacher: ActorRef) extends Actor with ActorLogging {
   // import messages
   import Fetcher._
 
@@ -41,7 +42,11 @@ class Fetcher extends Actor with ActorLogging {
     case HttpResponse(StatusCodes.OK, headers, entity, _) =>
       log.info("Request succeeded.")
       entity.dataBytes
-        .runWith(Sink.ignore)
+        .via(Framing.delimiter(ByteString("\n"), Config.rlecache.upstream.maximumLineLength, true))
+        .map(_.utf8String)
+        .runWith(Sink.seq)
+        .map(Cacher.Put)
+        .pipeTo(cacher)
     case resp @ HttpResponse(code, _, _, _) =>
       log.error("Request failed, response code: {}", code)
       resp.discardEntityBytes()

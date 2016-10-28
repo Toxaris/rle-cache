@@ -23,6 +23,10 @@ object Config extends ConfigTree(ConfigFactory.load()) {
 
       /** `rle-cache.upstream.interval` configuration of finite duration between polls of upstream endpoint */
       val interval = Duration.fromNanos(getDuration("interval").toNanos())
+
+      /** `rle-cache.upstream.maximum-line-length` configuration of maximum length of one line in the upstream response */
+      val maximumLineLength = getInt("maximum-line-length")
+
     }
   }
 }
