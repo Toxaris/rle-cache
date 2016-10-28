@@ -16,7 +16,7 @@ object Fetcher {
   /** Message to Fetcher: Fetch data from upstream now. */
   object Fetch
 
-  /**	Return props for creating a Fetcher. */
+  /** Return props for creating a Fetcher. */
   def props(cacher: ActorRef): Props = Props(new Fetcher(cacher))
 }
 
