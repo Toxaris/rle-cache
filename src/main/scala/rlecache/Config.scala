@@ -18,6 +18,9 @@ object Config extends ConfigTree(ConfigFactory.load()) {
     object upstream extends ConfigTree(getConfig("upstream")) {
       import config._
 
+      /** `rle-cache.upstream.endpoint` configuration of upstream endpoint URI */
+      val endpoint = getString("endpoint")
+
       /** `rle-cache.upstream.interval` configuration of finite duration between polls of upstream endpoint */
       val interval = Duration.fromNanos(getDuration("interval").toNanos())
     }

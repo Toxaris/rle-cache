@@ -4,9 +4,12 @@
 
 package rlecache
 
-import akka.actor.Actor
-import akka.actor.ActorLogging
-import akka.actor.Props
+import akka.actor._
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.client._
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl._
 
 object Fetcher {
   /** Message to Fetcher: Fetch data from upstream now. */
@@ -18,8 +21,29 @@ object Fetcher {
 
 /** Actor that fetches data from upstream. */
 class Fetcher extends Actor with ActorLogging {
+  // import messages
   import Fetcher._
+
+  // set up Akka
+  import akka.pattern.pipe
+  import context.dispatcher
+  implicit val materializer = ActorMaterializer()
+
+  // set up HTTP
+  val http = Http(context.system)
+  val request = HttpRequest(uri = Config.rlecache.upstream.endpoint)
+
+  // process messages
   def receive = {
-    case Fetch => log.info("fetch data from upstream")
+    case Fetch =>
+      log.info("Request data from {}.", request.uri)
+      http.singleRequest(request).pipeTo(self)
+    case HttpResponse(StatusCodes.OK, headers, entity, _) =>
+      log.info("Request succeeded.")
+      entity.dataBytes
+        .runWith(Sink.ignore)
+    case resp @ HttpResponse(code, _, _, _) =>
+      log.error("Request failed, response code: {}", code)
+      resp.discardEntityBytes()
   }
 }
