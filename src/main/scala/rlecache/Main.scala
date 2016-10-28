@@ -15,6 +15,7 @@ object Main extends App {
 
   // start actors
   val fetcher = system.actorOf(Fetcher.props, "fetcher")
+  val cacher = system.actorOf(Cacher.props, "cacher")
 
   // start regular fetching of upstream data
   system.scheduler.schedule(0.seconds, Config.rlecache.upstream.interval, fetcher, Fetcher.Fetch)
