@@ -71,4 +71,10 @@ object Compressor extends Compressor {
       case Compressed(count, element) +: rest if idx < count => element
       case Compressed(count, element) +: rest => index(rest, idx - count)
     }
+
+  /** Return decompressed length of RLE-encoded sequence. */
+  def decompressedLength : Seq[Compressed[Any]] => Int =
+    _.map {
+      case Compressed(count, _) => count
+    }.sum
 }

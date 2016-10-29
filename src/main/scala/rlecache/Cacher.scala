@@ -29,7 +29,7 @@ class Cacher extends Actor with ActorLogging {
   def receive = {
     case Put(seq) =>
       cache = seq
-      log.info("Cached {} items in {} runs.", Compressor.decompress(seq).size, seq.size)
+      log.info("Cached {} items in {} runs.", Compressor.decompressedLength(seq), seq.size)
     case Get(index) =>
       try {
         sender() ! Compressor.index(cache, index)

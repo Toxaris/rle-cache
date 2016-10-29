@@ -101,4 +101,11 @@ class RLESpec extends FlatSpec with Matchers {
     an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq("foo", "bar", "bar")), 4)
     an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq("foo", "bar", "bar")), 42)
   }
+
+  "Compressor.decompressedLength" should "return the lenght of the decompressed sequence" in {
+    decompressedLength(compress(Seq())) should be (0)
+    decompressedLength(compress(Seq("a"))) should be (1)
+    decompressedLength(compress(Seq("a", "a"))) should be (2)
+    decompressedLength(compress(Seq("a", "a", "b", "c", "c", "c"))) should be (6)
+  }
 }
