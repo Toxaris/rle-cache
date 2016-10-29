@@ -4,6 +4,8 @@
 
 package rlecache
 
+import scala.annotation.tailrec
+
 trait Compressor {
   def compress[A]: Seq[A] => Seq[Compressed[A]]
   def decompress[A]: Seq[Compressed[A]] => Seq[A]
@@ -26,4 +28,37 @@ object Compressed {
       case Single(element) => Some(1, element)
       case Repeat(count, element) => Some(count, element)
     }
+}
+
+/** Concrete RLE compression implementation */
+object Compressor extends Compressor {
+  /** Compress sequence. */
+  def compress[A] = {
+    case Seq() => Seq()
+    case head +: tail =>
+      val builder = Seq.newBuilder[Compressed[A]]
+
+      @tailrec
+      def collect(count: Int, element: A, seq: Seq[A]) {
+        seq match {
+          case Seq() =>
+            builder += Compressed(count, element)
+          case head +: tail if head == element =>
+            collect(count + 1, element, tail)
+          case head +: tail =>
+            builder += Compressed(count, element)
+            collect(1, head, tail)
+        }
+      }
+      collect(1, head, tail)
+
+      builder.result()
+  }
+
+  /** Decompress sequence. */
+  def decompress[A] =
+    for {
+      Compressed(count, element) <- _
+      _ <- 1 to count
+    } yield (element)
 }
