@@ -80,4 +80,25 @@ class RLESpec extends FlatSpec with Matchers {
     decompress(Seq(Repeat(2, "foo"), Repeat(3, "bar"), Single("foo"))) should be
        (Seq("foo", "foo", "bar", "bar", "bar", "foo"))
   }
+
+  "Compressor.index" should "find all elements in a compressed sequence" in {
+    val seq = Seq("a", "b", "b", "c", "c", "d", "e", "e", "e")
+    for (i <- 0 to seq.length - 1) {
+      index(compress(seq), i) should be (seq(i))
+    }
+  }
+
+  it should "throw IndexOutOfBoundsException for negative indices" in {
+    an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq()), -1)
+    an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq("foo", "bar", "bar")), -1)
+    an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq("foo", "bar", "bar")), -4)
+    an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq("foo", "bar", "bar")), -42)
+  }
+
+  it should "throw IndexOutOfBoundsException for too large indices" in {
+    an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq()), 0)
+    an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq("foo", "bar", "bar")), 3)
+    an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq("foo", "bar", "bar")), 4)
+    an [IndexOutOfBoundsException] should be thrownBy index(compress(Seq("foo", "bar", "bar")), 42)
+  }
 }

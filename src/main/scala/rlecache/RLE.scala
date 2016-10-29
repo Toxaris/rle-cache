@@ -61,4 +61,14 @@ object Compressor extends Compressor {
       Compressed(count, element) <- _
       _ <- 1 to count
     } yield (element)
+
+  /** Index into an RLE-encoded sequence. */
+  @tailrec
+  final def index[A](seq: Seq[Compressed[A]], idx: Int): A =
+    seq match {
+      case _ if idx < 0 => throw new IndexOutOfBoundsException
+      case Seq() => throw new IndexOutOfBoundsException
+      case Compressed(count, element) +: rest if idx < count => element
+      case Compressed(count, element) +: rest => index(rest, idx - count)
+    }
 }
