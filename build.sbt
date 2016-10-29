@@ -11,3 +11,5 @@ libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4.11"
 libraryDependencies += "com.typesafe.akka" %% "akka-http-experimental" % "2.4.11"
 
 libraryDependencies += "com.typesafe" % "config" % "1.3.1"
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
