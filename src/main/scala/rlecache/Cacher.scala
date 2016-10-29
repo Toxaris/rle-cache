@@ -11,7 +11,7 @@ object Cacher {
   case class Get(index: Int)
 
   /** Message to cacher: Cache this sequence. */
-  case class Put(seq: Seq[String])
+  case class Put(seq: Seq[Compressed[String]])
 
   /** Return props for creating a Cacher. */
   def props: Props = Props[Cacher]
@@ -23,16 +23,16 @@ class Cacher extends Actor with ActorLogging {
   import Cacher._
 
   // initialize cache
-  var cache = Seq[String]()
+  var cache = Seq[Compressed[String]]()
 
   // process messages
   def receive = {
     case Put(seq) =>
       cache = seq
-      log.info("Cached {} items.", seq.size)
+      log.info("Cached {} items in {} runs.", Compressor.decompress(seq).size, seq.size)
     case Get(index) =>
       try {
-        sender() ! cache(index)
+        sender() ! Compressor.decompress(cache)(index)
       } catch {
         case e: IndexOutOfBoundsException =>
           sender() ! Status.Failure(e)

@@ -45,6 +45,7 @@ class Fetcher(cacher: ActorRef) extends Actor with ActorLogging {
         .via(Framing.delimiter(ByteString("\n"), Config.rlecache.upstream.maximumLineLength, true))
         .map(_.utf8String)
         .runWith(Sink.seq)
+        .map(Compressor.compress)
         .map(Cacher.Put)
         .pipeTo(cacher)
     case resp @ HttpResponse(code, _, _, _) =>
